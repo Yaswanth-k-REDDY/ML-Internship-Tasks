@@ -43,5 +43,5 @@ Task-2-EDA/
 ```
 
 ## Author
-Yash
-Data Science Internship - Day 2
+Kapurapu Yaswanth Reddy 
+Internship - Day 2
