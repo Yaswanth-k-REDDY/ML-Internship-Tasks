@@ -1,0 +1,106 @@
+# Step 1: Import Libraries
+import pandas as pd
+import numpy as np
+import kagglehub
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    confusion_matrix,
+    classification_report,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+    roc_curve
+)
+
+import matplotlib.pyplot as plt
+
+# Step 2: Download Dataset
+path = kagglehub.dataset_download("uciml/breast-cancer-wisconsin-data")
+
+print("Dataset Path:", path)
+
+# Step 3: Load Dataset
+import os
+
+csv_file = os.path.join(path, "data.csv")
+df = pd.read_csv(csv_file)
+
+print(df.head())
+
+# Step 4: Data Preprocessing
+df.drop(['id', 'Unnamed: 32'], axis=1, inplace=True)
+
+# Convert diagnosis column
+df['diagnosis'] = df['diagnosis'].map({'M': 1, 'B': 0})
+
+X = df.drop('diagnosis', axis=1)
+y = df['diagnosis']
+
+# Step 5: Train-Test Split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+
+# Step 6: Feature Scaling
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Step 7: Train Logistic Regression Model
+model = LogisticRegression(max_iter=1000)
+
+model.fit(X_train, y_train)
+
+# Step 8: Predictions
+y_pred = model.predict(X_test)
+
+# Step 9: Evaluation Metrics
+
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+print("Precision:", precision_score(y_test, y_pred))
+print("Recall:", recall_score(y_test, y_pred))
+
+# Step 10: ROC-AUC Score
+y_prob = model.predict_proba(X_test)[:, 1]
+
+roc_auc = roc_auc_score(y_test, y_prob)
+
+print("ROC-AUC Score:", roc_auc)
+
+# Step 11: ROC Curve
+fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+
+plt.figure(figsize=(8,6))
+plt.plot(fpr, tpr, label=f"AUC = {roc_auc:.4f}")
+plt.plot([0,1], [0,1], linestyle='--')
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("ROC Curve")
+plt.legend()
+plt.show()
+
+# Step 12: Threshold Tuning
+custom_threshold = 0.3
+
+y_custom_pred = (y_prob >= custom_threshold).astype(int)
+
+print("\nConfusion Matrix (Threshold = 0.3)")
+print(confusion_matrix(y_test, y_custom_pred))
+
+print("Precision:",
+      precision_score(y_test, y_custom_pred))
+
+print("Recall:",
+      recall_score(y_test, y_custom_pred))
