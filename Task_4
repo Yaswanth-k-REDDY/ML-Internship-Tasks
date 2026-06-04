@@ -78,7 +78,6 @@ y_prob = model.predict_proba(X_test)[:, 1]
 roc_auc = roc_auc_score(y_test, y_prob)
 
 print("ROC-AUC Score:", roc_auc)
-
 # Step 11: ROC Curve
 fpr, tpr, thresholds = roc_curve(y_test, y_prob)
 
